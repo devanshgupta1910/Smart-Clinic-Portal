@@ -1,4 +1,6 @@
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function PatientRegister() {
   const [patient, setPatient] = useState({
@@ -9,6 +11,8 @@ export default function PatientRegister() {
     dob: "",
   });
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     setPatient({ ...patient, [e.target.name]: e.target.value });
   };
@@ -17,19 +21,16 @@ export default function PatientRegister() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patient),
-      });
-
-      if (response.ok) {
-        alert("Patient registered successfully!");
+      const response = await axios.post("http://localhost:5000/api/users/register", patient);
+    
+      if (response.status === 201 || response.status === 200) {
+        //alert("Patient registered successfully!");
+        navigate("/patient/dashboard");
       } else {
         alert("Registration failed. Try again.");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error:", error.response?.data || error.message);
       alert("Error registering patient.");
     }
   };

@@ -4,8 +4,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DoctorRegister from "./pages/DoctorRegister";
 import PatientRegister from "./pages/PatientRegister"; 
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import PatientDashboard from "./pages/patient/PatientDashboard";
+import DepartmentDoctors from "./pages/patient/DepartmentDoctors";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import BookAppointment from "./pages/patient/BookAppointment";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/patient/dashboard" element={<PatientDashboard />} />
       <Route path="/patient/book" element={<BookAppointment />} />
       <Route path="/patient/upload" element={<UploadReport />} />
+      <Route path="/patient/doctors/:department" element={<DepartmentDoctors />} />
 
       {/* Doctor Routes */}
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />

@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Register a New Doctor
 router.post("/register", async (req, res) => {
-    const { name, email, password, specialization, experience, phone, availability } = req.body;
+    const { name, email, password, department, specialization, experience, phone, availability } = req.body;
     try {
         const existingDoctor = await Doctor.findOne({ email });
         if (existingDoctor) return res.status(400).json({ message: "Doctor already exists" });
@@ -20,6 +20,7 @@ router.post("/register", async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            department,
             specialization,
             experience,
             phone,
@@ -69,6 +70,18 @@ router.get("/approved", async (req, res) => {
     }
 });
 
+// ✅ Get only approved doctors of a given departmnet (Patients can see this)
+router.get("/approved/:department", async (req, res) => {
+    try {
+        const filteredDoctors = await Doctor.find({ isApproved: true, department: req.params.department });
+        console.log(filteredDoctors);
+        res.json(filteredDoctors);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// For admin to approve
 router.put("/approve/:id", authMiddleware, adminMiddleware, async (req, res) => {
     try {
         const doctor = await Doctor.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });

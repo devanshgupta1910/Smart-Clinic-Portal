@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserMd, FaUser, FaUserShield } from "react-icons/fa";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -8,17 +9,34 @@ export default function Login() {
   const [role, setRole] = useState("patient"); // Default role is Patient
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     console.log(`Logging in as ${role}...`);
 
+    let api_role = "users";
+    if(role == "doctor")
+      api_role = "doctors";
+    else if(role == "admin")
+      api_role = "admin";
+
     // Redirect based on user role
-    if (role === "patient") {
-      navigate("/patient/dashboard");
-    } else if (role === "doctor") {
-      navigate("/doctor/dashboard");
-    } else if (role === "admin") {
-      navigate("/admin/dashboard");
+    try {
+      const response = await axios.post(`http://localhost:5000/api/${api_role}/login`, {
+        email,
+        password,
+      });
+  
+      // ✅ Save Token (optional - if you want to keep user logged in)
+      localStorage.setItem("token", response.data.token);
+  
+      // ✅ Navigate based on user role (from backend, not selected manually)
+      const decodedToken = JSON.parse(atob(response.data.token.split(".")[1]));
+      const userRole = decodedToken.role;
+  
+      navigate(`/${role}/dashboard`);
+    } catch (error) {
+      console.error("Login Error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
