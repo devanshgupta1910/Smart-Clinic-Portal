@@ -60,6 +60,66 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
     }
 });
 
+// // ✅ Get logged-in doctor's details
+// router.get("/details/:id", authMiddleware, async (req, res) => {
+//     try {
+//         const { role } = req.user; // Extract user role from token
+//         let doctor;
+
+//         if (role === "doctor" || role === "admin") {
+//             // Doctors & Admins get full details (excluding password)
+//             doctor = await Doctor.findById(req.params.id).select("-password");
+//         } else {
+//             // Patients get only selected details
+//             doctor = await Doctor.findById(req.params.id).select("name specialization experience availability");
+
+//         }
+
+//         if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+//         res.json(doctor);
+//     } catch (error) {
+//         console.error("Error fetching doctor:", error);
+//         res.status(500).json({ message: "Server error" });
+//     }
+// });
+
+router.get("/details/:id", authMiddleware, async (req, res) => {
+    try {
+        const { role } = req.user; // Extract user role from token
+        const { date } = req.query; // Get the selected date from query params
+
+        let doctor;
+        if (role === "doctor" || role === "admin") {
+            doctor = await Doctor.findById(req.params.id).select("-password");
+        } else {
+            doctor = await Doctor.findById(req.params.id).select("name specialization experience availability");
+        }
+
+        if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+        if (date) {
+            // Convert the date to a weekday (e.g., "Monday")
+            const selectedDay = new Date(date).toLocaleString("en-us", { weekday: "long" });
+
+            // Send only the slots for the selected day
+            return res.json({ 
+                name: doctor.name,
+                specialization: doctor.specialization,
+                experience: doctor.experience,
+                availability: doctor.availability[selectedDay] || {} 
+            });
+        }
+
+        res.json(doctor);
+    } catch (error) {
+        console.error("Error fetching doctor:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
+
 // ✅ Get only approved doctors (Patients can see this)
 router.get("/approved", async (req, res) => {
     try {
@@ -94,24 +154,26 @@ router.put("/approve/:id", authMiddleware, adminMiddleware, async (req, res) => 
 });
 
 /** ✅ Update Doctor Profile (Doctor Only) */
-router.put("/update/:doctorId", authMiddleware, doctorMiddleware, async (req, res) => {
+router.patch("/update/:doctorId", authMiddleware, doctorMiddleware, async (req, res) => {
     try {
-        const { name, email, password, specialization, experience, phone } = req.body;
+        const { name, email, password, department, specialization, experience, phone, availability } = req.body;
+        console.log(req.body);
         const doctor = await Doctor.findById(req.params.doctorId);
         if (!doctor) return res.status(404).json({ message: "Doctor not found" });
 
         // Hash new password if provided
         if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            doctor.password = hashedPassword;
+            doctor.password = await bcrypt.hash(password, 10);
         }
 
-        // Update details
-        doctor.name = name || doctor.name;
-        doctor.email = email || doctor.email;
-        doctor.specialization = specialization || doctor.specialization;
-        doctor.experience = experience || doctor.experience;
-        doctor.phone = phone || doctor.phone;
+        // Update only provided fields
+        if (name) doctor.name = name;
+        if (email) doctor.email = email;
+        if (department) doctor.department = department;
+        if (specialization) doctor.specialization = specialization;
+        if (experience) doctor.experience = experience;
+        if (phone) doctor.phone = phone;
+        if (availability) doctor.availability = availability;
 
         await doctor.save();
         res.json({ message: "Doctor profile updated successfully", doctor });
@@ -119,6 +181,7 @@ router.put("/update/:doctorId", authMiddleware, doctorMiddleware, async (req, re
         res.status(500).json({ error: error.message });
     }
 });
+
 
 /** ✅ Delete Doctor Profile (Admin Only) */
 router.delete("/delete/:doctorId", authMiddleware, adminMiddleware, async (req, res) => {

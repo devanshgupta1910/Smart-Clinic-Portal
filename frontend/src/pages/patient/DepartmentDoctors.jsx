@@ -1,17 +1,17 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import BookAppointmentPopup from "./BookAppointment"; // Import popup component
 
 export default function DepartmentDoctors() {
   const { department } = useParams();
-  const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/doctors/approved?department=${department}`);
-        console.log("Response:", response);
+        const response = await axios.get(`http://localhost:5000/api/doctors/approved/${department}`);
         setDoctors(response.data);
       } catch (error) {
         console.error("Error fetching doctors:", error.response?.data || error.message);
@@ -39,7 +39,7 @@ export default function DepartmentDoctors() {
                 <p>{doctor.specialization}</p>
                 <p>📞 {doctor.phone}</p>
                 <button
-                  onClick={() => navigate(`/patient/book/${encodeURIComponent(doctor.name)}`)}
+                  onClick={() => setSelectedDoctor(doctor._id)} // Open popup
                   className="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                 >
                   Book Appointment
@@ -48,6 +48,14 @@ export default function DepartmentDoctors() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Show popup if a doctor is selected */}
+      {selectedDoctor && (
+        <BookAppointmentPopup
+          doctorId={selectedDoctor}
+          closePopup={() => setSelectedDoctor(null)}
+        />
       )}
     </div>
   );

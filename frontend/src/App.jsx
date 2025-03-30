@@ -31,7 +31,7 @@ export default function App() {
 
       {/* Patient Routes */}
       <Route path="/patient/dashboard" element={<PatientDashboard />} />
-      <Route path="/patient/book" element={<BookAppointment />} />
+      <Route path="/patient/book/:doctorId" element={<BookAppointment />} />
       <Route path="/patient/upload" element={<UploadReport />} />
       <Route path="/patient/doctors/:department" element={<DepartmentDoctors />} />
 

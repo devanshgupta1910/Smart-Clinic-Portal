@@ -35,8 +35,13 @@ const doctorSchema = new mongoose.Schema({
     experience: { type: Number, required: true }, // Years of experience
     phone: { type: String, required: true },
     availability: {
-        type: [String], // Example: ["Monday", "Wednesday", "Friday"]
-        required: false,
+        Monday: { type: String, length: 24, default: "000000000000000000000000" },
+        Tuesday: { type: String, length: 24, default: "000000000000000000000000" },
+        Wednesday: { type: String, length: 24, default: "000000000000000000000000" },
+        Thursday: { type: String, length: 24, default: "000000000000000000000000" },
+        Friday: { type: String, length: 24, default: "000000000000000000000000" },
+        Saturday: { type: String, length: 24, default: "000000000000000000000000" },
+        Sunday: { type: String, length: 24, default: "000000000000000000000000" }
     },
     isApproved: { type: Boolean, default: false } // Admin approval required
 }, { timestamps: true });
