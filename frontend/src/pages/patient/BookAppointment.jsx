@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; 
+import { jwtDecode } from "jwt-decode";
 
 export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSuccess }) {
   const [schedule, setSchedule] = useState("");
@@ -25,11 +25,9 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
       const token = localStorage.getItem("token");
       const response = await axios.get(
         `http://localhost:5000/api/doctors/details/${doctorId}?date=${date}`,
-        {
-          headers: { Authorization: token },
-        }
+        { headers: { Authorization: token } }
       );
-      
+
       setSchedule(response.data.availableSlots || "000000000000000000000000");
     } catch (error) {
       console.error("Error fetching doctor schedule:", error);
@@ -42,20 +40,28 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
   };
 
   const handleSlotSelection = (time) => {
+    const today = new Date().toISOString().split("T")[0];
+
     if (!date) {
       alert("Please select a date first!");
       return;
     }
+
+    if (date === today) {
+      alert("Appointments can only be booked from the next day onwards.");
+      return;
+    }
+
     setSelectedSlot({ day: dayName, time });
   };
 
   const handleConfirmAndPay = async () => {
     if (!selectedSlot) return;
-  
+
     try {
       const token = localStorage.getItem("token");
       const patientId = jwtDecode(token).id;
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/appointments/book",
         {
           doctorId,
@@ -63,11 +69,9 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
           date,
           time: selectedSlot.time,
         },
-        {
-          headers: { Authorization: token },
-        }
+        { headers: { Authorization: token } }
       );
-  
+
       alert("Appointment booked successfully!");
       closePopup();
     } catch (error) {
@@ -85,13 +89,14 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
         >
           ✖
         </button>
-        
+
         <h1 className="text-2xl font-bold mb-4">Book Appointment</h1>
 
         <input
           type="date"
           className="p-2 border rounded w-full mb-3"
           value={date}
+          min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} // Ensures the earliest selectable date is tomorrow
           onChange={(e) => setDate(e.target.value)}
         />
 

@@ -30,11 +30,9 @@ export default function DoctorDashboard() {
       });
       setDoctor(response.data);
       
-      // Ensure schedule is set correctly
       if (response.data.availability) {  
         setSchedule(response.data.availability);  
       } else {  
-        console.error("Invalid availability data:", response.data.availability);
         setSchedule({
           Monday: "000000000000000000000000",
           Tuesday: "000000000000000000000000",
@@ -61,6 +59,31 @@ export default function DoctorDashboard() {
       console.error("Error fetching appointments:", error);  
     }  
   };  
+
+  const markAppointmentCompleted = async (appointmentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.patch(`http://localhost:5000/api/appointments/update/${appointmentId}`, 
+        { status: "completed" }, 
+        { headers: { Authorization: token } }
+      );
+
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appointment) =>
+          appointment._id === appointmentId ? { ...appointment, status: "Completed" } : appointment
+        )
+      );
+
+      alert("Appointment marked as completed!");
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+    }
+  };
 
   const toggleSlot = (dayName, hourIndex) => {  
     setSchedule((prevSchedule) => {
@@ -116,18 +139,9 @@ export default function DoctorDashboard() {
               <button  
                 key={`slot-${day}-${hour}`}  
                 className={`w-10 h-10 border rounded transition duration-200   
-                  ${  
-                    schedule[day]?.[hour] === "1"  
-                      ? "bg-green-500 cursor-pointer"  
-                      : "bg-gray-200 hover:bg-green-200 cursor-pointer"  
-                  }`}  
+                  ${schedule[day]?.[hour] === "1" ? "bg-green-500 cursor-pointer" : "bg-gray-200 hover:bg-green-200 cursor-pointer"}`}  
                 onClick={() => toggleSlot(day, hour)}  
               >  
-                {schedule[day]?.[hour] === "0" && (  
-                  <span className="absolute -top-2 -right-2 opacity-0 transition-opacity duration-200 hover:opacity-100">  
-                    ➤  
-                  </span>  
-                )}  
               </button>  
             ))}  
           </div>  
@@ -153,55 +167,39 @@ export default function DoctorDashboard() {
         <div className="flex justify-between items-center bg-white shadow-md p-4 rounded-lg mb-6">  
           <h2 className="text-2xl font-bold text-gray-700">Doctor Dashboard</h2>  
           <div className="relative">  
-            <FaUserCircle  
-              className="text-3xl text-gray-700 cursor-pointer"  
-              onClick={() => setShowDropdown(!showDropdown)}  
-            />  
+            <FaUserCircle className="text-3xl text-gray-700 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />  
             {showDropdown && (  
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg p-2 z-10">  
-                <button onClick={() => navigate("/doctor/profile")} className="block w-full text-left p-2 hover:bg-gray-200">  
-                  Profile  
-                </button>  
-                <button onClick={handleLogout} className="block w-full text-left p-2 hover:bg-gray-200">  
-                  Logout  
-                </button>  
+                <button onClick={() => navigate("/doctor/profile")} className="block w-full text-left p-2 hover:bg-gray-200">Profile</button>  
+                <button onClick={handleLogout} className="block w-full text-left p-2 hover:bg-gray-200">Logout</button>  
               </div>  
             )}  
           </div>  
         </div>  
 
-        <div className="bg-white p-4 rounded-lg shadow-md mb-6">  
-          <h3 className="text-xl font-semibold mb-4">Doctor Details</h3>  
-          {doctor ? (  
-            <div>  
-              <p><strong>Name:</strong> {doctor.name}</p>  
-              <p><strong>Specialization:</strong> {doctor.specialization}</p>  
-              <p><strong>Email:</strong> {doctor.email}</p>  
-            </div>  
-          ) : (  
-            <p className="text-gray-500">Loading doctor details...</p>  
-          )}  
-        </div>  
-
         <div className="bg-white p-4 rounded-lg shadow-md">  
           <h3 className="text-xl font-semibold mb-4">Your Appointments</h3>  
-          {appointments.length === 0 ? (  
-            <p className="text-gray-500">No upcoming appointments.</p>  
-          ) : (  
-            <div className="space-y-4">  
-              {appointments.map((appointment) => (  
-                <div key={appointment._id} className="bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">   
-                  <div>  
-                    <h4 className="text-lg font-semibold flex items-center">  
-                      <FaUser className="text-blue-500 mr-2" /> {appointment.patient}  
-                    </h4>  
-                    <p><strong>Time:</strong> {appointment.time}</p>  
-                    <p><strong>Date:</strong> {appointment.date}</p>  
-                  </div>  
-                </div>  
-              ))}  
-            </div>  
-          )}  
+          {appointments.map((appointment) => {
+            const appointmentDate = appointment.date.split("T")[0];
+            const formattedHour = String(appointment.timeSlot).padStart(2, "0");
+            const appointmentDateTime = new Date(`${appointmentDate}T${formattedHour}:00:00Z`);
+            const isPastAppointment = appointmentDateTime < new Date();
+            return (
+              <div key={appointment._id} className="bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
+                <div>
+                  <h4 className="text-lg font-semibold flex items-center"><FaUser className="text-blue-500 mr-2" /> {appointment.patient}</h4>
+                  <p><strong>Time:</strong> {appointment.time}</p>
+                  <p><strong>Date:</strong> {appointment.date}</p>
+                </div>
+                <button
+                    onClick={() => markAppointmentCompleted(appointment._id)}
+                    disabled={!isPastAppointment || appointment.status === "completed"} // Disable if already completed
+                    className={`px-4 py-2 text-white rounded ${appointment.status === "completed" || !isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}>
+                    {appointment.status === "completed" ? "Completed" : "Mark as Completed"}
+                </button>
+              </div>
+            );
+          })}
         </div>  
       </div>  
     </div>  

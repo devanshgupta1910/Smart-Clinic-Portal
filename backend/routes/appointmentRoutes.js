@@ -79,5 +79,26 @@ router.get("/all", authMiddleware, async (req, res) => {
     }
 });
 
+router.patch("/update/:id", async (req, res) => {
+    try {
+      const { status } = req.body; // Get new status from request
+      const { id } = req.params; // Get appointment ID from URL
+  
+      // Check if the appointment exists
+      const appointment = await Appointment.findById(id);
+      if (!appointment) {
+        return res.status(404).json({ message: "Appointment not found" });
+      }
+  
+      // Update status
+      appointment.status = status;
+      await appointment.save();
+  
+      res.json({ message: "Appointment updated successfully", appointment });
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
 export default router;
