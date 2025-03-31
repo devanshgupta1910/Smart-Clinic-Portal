@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"; 
 
 export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSuccess }) {
   const [schedule, setSchedule] = useState("");
@@ -7,21 +8,18 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
   const [date, setDate] = useState("");
   const [dayName, setDayName] = useState("");
 
-  // Update dayName when date changes
   useEffect(() => {
     if (date) {
       updateDayName(date);
     }
   }, [date]);
 
-  // Fetch schedule after doctorId, date, and dayName are available
   useEffect(() => {
     if (doctorId && date && dayName) {
       fetchDoctorSchedule();
     }
   }, [doctorId, date, dayName]);
 
-  // Fetch Doctor Schedule from API
   const fetchDoctorSchedule = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -31,21 +29,18 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
           headers: { Authorization: token },
         }
       );
-
-      console.log("Fetched schedule:", response.data);
-      setSchedule(response.data.availability || "000000000000000000000000"); // Ensure default value
+      
+      setSchedule(response.data.availableSlots || "000000000000000000000000");
     } catch (error) {
       console.error("Error fetching doctor schedule:", error);
     }
   };
 
-  // Convert selected date to day name (e.g., "Monday")
   const updateDayName = (selectedDate) => {
     const day = new Date(selectedDate).toLocaleDateString("en-US", { weekday: "long" });
     setDayName(day);
   };
 
-  // Handle slot selection
   const handleSlotSelection = (time) => {
     if (!date) {
       alert("Please select a date first!");
@@ -54,36 +49,45 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
     setSelectedSlot({ day: dayName, time });
   };
 
-  // Handle Payment Process
-  const handleConfirmAndPay = () => {
+  const handleConfirmAndPay = async () => {
     if (!selectedSlot) return;
-    
-    // Call the function to handle payment processing
-    onBookingSuccess({
-      doctorId,
-      date,
-      time: selectedSlot.time,
-    });
-
-    // Close popup after selecting a slot
-    closePopup();
+  
+    try {
+      const token = localStorage.getItem("token");
+      const patientId = jwtDecode(token).id;
+      const response = await axios.post(
+        "http://localhost:5000/api/appointments/book",
+        {
+          doctorId,
+          patientId,
+          date,
+          time: selectedSlot.time,
+        },
+        {
+          headers: { Authorization: token },
+        }
+      );
+  
+      alert("Appointment booked successfully!");
+      closePopup();
+    } catch (error) {
+      console.error("Error booking appointment:", error);
+      alert("Failed to book appointment. Please try again.");
+    }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-w-2xl relative">
-        
-        {/* Close Button */}
         <button
           onClick={closePopup}
           className="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-xl"
         >
           ✖
         </button>
-
+        
         <h1 className="text-2xl font-bold mb-4">Book Appointment</h1>
 
-        {/* Date Selection */}
         <input
           type="date"
           className="p-2 border rounded w-full mb-3"
@@ -91,14 +95,13 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
           onChange={(e) => setDate(e.target.value)}
         />
 
-        {/* Slots Display */}
-        {date && schedule ? (
+        {date && schedule.includes("1") && (
           <div>
             <h2 className="text-lg font-bold mb-2">{dayName} Slots</h2>
             <div className="grid grid-cols-4 gap-2">
               {Array.from({ length: 24 }, (_, hour) => {
-                const isAvailable = schedule.charAt(hour) == "1";
-                const isSelected = selectedSlot?.time == hour;
+                const isAvailable = schedule.charAt(hour) === "1";
+                const isSelected = selectedSlot?.time === hour;
 
                 return (
                   <button
@@ -108,9 +111,8 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
                         ? isSelected
                           ? "bg-blue-600 text-white"
                           : "bg-green-500 hover:bg-green-600 cursor-pointer"
-                        : "bg-gray-300 cursor-not-allowed"
+                        : "hidden"
                     }`}
-                    disabled={!isAvailable}
                     onClick={() => isAvailable && handleSlotSelection(hour)}
                   >
                     {isAvailable ? (isSelected ? "✔" : `${hour}:00`) : ""}
@@ -119,7 +121,6 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
               })}
             </div>
 
-            {/* Confirm & Pay Button */}
             {selectedSlot && (
               <div className="mt-4 text-center">
                 <button
@@ -131,8 +132,6 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
               </div>
             )}
           </div>
-        ) : (
-          date && <p className="text-red-500 mt-3">No slots available for this date.</p>
         )}
       </div>
     </div>

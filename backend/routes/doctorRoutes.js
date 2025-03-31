@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Doctor from "../models/doctorModel.js";
+import Appointment from "../models/appointmentModel.js";
 import dotenv from "dotenv";
 import { authMiddleware, adminMiddleware, doctorMiddleware } from "../middleware/authMiddleware.js";
 
@@ -101,13 +102,41 @@ router.get("/details/:id", authMiddleware, async (req, res) => {
         if (date) {
             // Convert the date to a weekday (e.g., "Monday")
             const selectedDay = new Date(date).toLocaleString("en-us", { weekday: "long" });
+            let availableSlots = doctor.availability[selectedDay]; 
 
-            // Send only the slots for the selected day
-            return res.json({ 
+            if (!availableSlots) {
+                return res.json({
+                    name: doctor.name,
+                    specialization: doctor.specialization,
+                    experience: doctor.experience,
+                    availableSlots: "000000000000000000000000" // Default unavailable slots
+                });
+            }
+
+            // Convert availableSlots (string) to an array for easier modification
+            availableSlots = availableSlots.split("");
+
+            // Check appointment counts for each slot
+            for (let hour = 0; hour < 24; hour++) {
+                if (availableSlots[hour] === "1") {
+                    const appointmentCount = await Appointment.countDocuments({
+                        doctorId: req.params.id,
+                        date: new Date(date),
+                        timeSlot: hour,
+                    });
+
+                    // If the slot is fully booked (3 appointments), mark it as unavailable
+                    if (appointmentCount >= 3) {
+                        availableSlots[hour] = "0";
+                    }
+                }
+            }
+
+            return res.json({
                 name: doctor.name,
                 specialization: doctor.specialization,
                 experience: doctor.experience,
-                availability: doctor.availability[selectedDay] || {} 
+                availableSlots: availableSlots.join(""), // Convert back to string
             });
         }
 

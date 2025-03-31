@@ -1,48 +1,48 @@
 import express from "express";
-import {authMiddleware} from "../middleware/authMiddleware.js";
-import Appointment from "../models/appointmentModel.js";
-import Doctor from "../models/doctorModel.js";
 import moment from "moment";
+import Doctor from "../models/doctorModel.js";
+import Appointment from "../models/appointmentModel.js";
+import {authMiddleware} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/book", authMiddleware, async (req, res) => {
     try {
-        const { doctorId, patiendId, date } = req.body;
-        const appointmentDate = new Date(date); // Convert to Date object
-        const time = moment(appointmentDate).format("HH:mm"); // Extract time in HH:mm format
+        const { doctorId, patientId, date, time } = req.body;
+        const appointmentDate = new Date(date);
+        const dayName = moment(appointmentDate).format("dddd"); // Get day name
 
         // Find the doctor
         const doctor = await Doctor.findById(doctorId);
         if (!doctor) return res.status(404).json({ message: "Doctor not found" });
 
-        // Find the selected date's availability
-        const availabilityIndex = doctor.availability.findIndex(
-            (slot) => moment(slot.date).format("YYYY-MM-DD") === moment(appointmentDate).format("YYYY-MM-DD")
-        );
-        if (availabilityIndex === -1) return res.status(400).json({ message: "No available slots for this date" });
-
-        // Check if the slot exists
-        const slotIndex = doctor.availability[availabilityIndex].slots.indexOf(time);
-        if (slotIndex === -1) return res.status(400).json({ message: "Slot not available" });
-
-        // Remove the booked slot
-        doctor.availability[availabilityIndex].slots.splice(slotIndex, 1);
-
-        // If no more slots are available for the day, remove the entire date entry
-        if (doctor.availability[availabilityIndex].slots.length === 0) {
-            doctor.availability.splice(availabilityIndex, 1);
+        // Check if the doctor is available on the selected day and time
+        if (!doctor.availability[dayName]) {
+            return res.status(400).json({ message: "Doctor is not available on this day" });
         }
 
-        // Save the updated doctor info
-        await doctor.save();
+        const availability = doctor.availability[dayName];
+        if (!availability || availability.charAt(time) !== "1") {
+            return res.status(400).json({ message: "Doctor is not available at this time slot" });
+        }
+
+        // Count existing appointments for this doctor, date, and time slot
+        const appointmentCount = await Appointment.countDocuments({ 
+            doctorId, 
+            date: appointmentDate, 
+            timeSlot: time 
+        });
+
+        if (appointmentCount >= 3) {
+            return res.status(400).json({ message: "Time slot is fully booked" });
+        }
 
         // Create the appointment
         const appointment = new Appointment({
-            doctor: doctorId,
-            patiendId,
-            date: appointmentDate, // Full Date & Time stored
-            time, // Extracted Time
+            doctorId,
+            patientId,
+            date: appointmentDate,
+            timeSlot: time,
             status: "pending",
         });
 
@@ -52,6 +52,7 @@ router.post("/book", authMiddleware, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 // router.get("/doctor/:doctorId/today", authMiddleware, async (req, res) => {
