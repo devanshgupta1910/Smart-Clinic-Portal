@@ -29,18 +29,32 @@ router.post("/login", async (req, res) => {
 
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(401).json({ message: "Invalid password" });
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ id: user._id, role: "patient" }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.json({ token });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
+router.get("/profile", authMiddleware, async (req, res) => {
+    try {    
+      console.log(req.user.id);
+      const patient = await User.findById(req.user.id).select("-password"); // Exclude password
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+      res.status(200).json(patient);
+    } catch (error) {
+      console.error("Error fetching patient profile:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+});
+
 /** ✅ Update Patient Profile (Patient Only) */
-router.put("/update/:patientId", authMiddleware, async (req, res) => {
+router.put("/update", authMiddleware, async (req, res) => {
     try {
         const { name, email, password, phone, age } = req.body;
-        const patient = await Patient.findById(req.params.patientId);
+        const patient = await User.findById(req.user.id);
         if (!patient) return res.status(404).json({ message: "Patient not found" });
 
         // Hash new password if provided
@@ -65,7 +79,7 @@ router.put("/update/:patientId", authMiddleware, async (req, res) => {
 /** ✅ Delete Patient Profile (Admin Only) */
 router.delete("/delete/:patientId", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const patient = await Patient.findByIdAndDelete(req.params.patientId);
+        const patient = await User.findByIdAndDelete(req.params.patientId);
         if (!patient) return res.status(404).json({ message: "Patient not found" });
 
         res.json({ message: "Patient deleted successfully" });

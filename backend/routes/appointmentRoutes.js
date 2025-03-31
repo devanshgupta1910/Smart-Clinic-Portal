@@ -55,24 +55,29 @@ router.post("/book", authMiddleware, async (req, res) => {
 
 
 
-// router.get("/doctor/:doctorId/today", authMiddleware, async (req, res) => {
-//     if (req.user.role !== "doctor" || req.user.id !== req.params.doctorId) {
-//         return res.status(403).json({ message: "Access denied" });
-//     }
+router.get("/all", authMiddleware, async (req, res) => {
+    try {
+        let appointments;
+        const { role } = req.user;
+        if (role === "doctor") {
+            // Fetch all appointments for the doctor
+            appointments = await Appointment.find({
+                doctorId: req.user.id
+            }).populate("patientId", "name email");
+        } else if (role === "patient") {
+            // Fetch all appointments for the patient
+            appointments = await Appointment.find({
+                patientId: req.user.id
+            }).populate("doctorId", "name email specialization");
+        } else {
+            return res.status(403).json({ message: "Access denied" });
+        }
 
-//     try {
-//         const today = new Date().setHours(0, 0, 0, 0);
-//         const tomorrow = new Date(today).setDate(new Date(today).getDate() + 1);
+        res.json(appointments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
-//         const appointments = await Appointment.find({
-//             doctorId: req.user.id,
-//             date: { $gte: today, $lt: tomorrow }
-//         }).populate("patientId", "name email");
-
-//         res.json(appointments);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// });
 
 export default router;

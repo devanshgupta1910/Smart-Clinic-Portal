@@ -27,8 +27,8 @@ export default function DoctorDashboard() {
       let myId = jwtDecode(token).id;  
       const response = await axios.get(`http://localhost:5000/api/doctors/details/${myId}`, {  
         headers: { Authorization: token }  
-      });  
-      setDoctor(response.data);  
+      });
+      setDoctor(response.data);
       
       // Ensure schedule is set correctly
       if (response.data.availability) {  
@@ -53,7 +53,7 @@ export default function DoctorDashboard() {
 
   const fetchAppointments = async (token) => {  
     try {  
-      const response = await axios.get("http://localhost:5000/api/doctors/appointments", {  
+      const response = await axios.get("http://localhost:5000/api/appointments/all", {  
         headers: { Authorization: token }  
       });  
       setAppointments(response.data);  

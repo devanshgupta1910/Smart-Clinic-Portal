@@ -85,6 +85,7 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
 //     }
 // });
 
+
 router.get("/details/:id", authMiddleware, async (req, res) => {
     try {
         const { role } = req.user; // Extract user role from token

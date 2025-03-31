@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserMd, FaUser, FaUserShield } from "react-icons/fa";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,9 +30,7 @@ export default function Login() {
       // ✅ Save Token (optional - if you want to keep user logged in)
       localStorage.setItem("token", response.data.token);
   
-      // ✅ Navigate based on user role (from backend, not selected manually)
-      const decodedToken = JSON.parse(atob(response.data.token.split(".")[1]));
-      const userRole = decodedToken.role;
+      console.log(jwtDecode(response.data.token));
   
       navigate(`/${role}/dashboard`);
     } catch (error) {

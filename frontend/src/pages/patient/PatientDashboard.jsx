@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import axios from "axios";  
+import {jwtDecode} from "jwt-decode";
 import {
   FaDownload,
   FaUserMd,
@@ -55,12 +57,25 @@ export default function PatientDashboard() {
   ];
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/patient/appointments")
-      .then((res) => res.json())
-      .then((data) => setAppointments(data))
-      .catch((error) => console.error("Error fetching appointments:", error));
-  }, []);
-
+    const token = localStorage.getItem("token");
+    if (!token) {  
+      navigate("/login");  
+      return;  
+    }  
+    fetchAppointments(token);
+  }, [navigate]);
+  const fetchAppointments = async (token) => {
+    try {
+      console.log(jwtDecode(token));
+      const response = await axios.get("http://localhost:5000/api/appointments/all", {
+        headers: { Authorization: token }, // Add token to headers
+      });
+      setAppointments(response.data); // Ensure response is an array
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setAppointments([]); // Prevent state from being undefined
+    }
+  };
   const handleDownload = (prescriptionUrl) => {
     const link = document.createElement("a");
     link.href = prescriptionUrl;
@@ -115,7 +130,7 @@ export default function PatientDashboard() {
             <div className="space-y-4">
               {appointments.map((appointment) => (
                 <div
-                  key={appointment.id}
+                  key={appointment._id}
                   className="bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center"
                 >
                   <div>

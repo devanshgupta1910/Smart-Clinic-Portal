@@ -11,6 +11,9 @@ import BookAppointment from "./pages/patient/BookAppointment";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
 import UploadReport from "./pages/patient/UploadReport";
+import PatientProfile from "./pages/patient/PatientProfile";
+import DoctorProfile from "./pages/doctor/DoctorProfile";
+
 
 export default function App() {
   return (
@@ -34,10 +37,12 @@ export default function App() {
       <Route path="/patient/book/:doctorId" element={<BookAppointment />} />
       <Route path="/patient/upload" element={<UploadReport />} />
       <Route path="/patient/doctors/:department" element={<DepartmentDoctors />} />
+      <Route path="/patient/profile" element={<PatientProfile />} />
 
       {/* Doctor Routes */}
       <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
       <Route path="/doctor/patients" element={<DoctorPatients />} />
+      <Route path="/doctor/profile" element={<DoctorProfile />} />
 
     </Routes>
   );
