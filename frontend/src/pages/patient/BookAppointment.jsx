@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSuccess }) {
-  const [schedule, setSchedule] = useState({});
+  const [schedule, setSchedule] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [date, setDate] = useState("");
   const [dayName, setDayName] = useState("");
@@ -33,7 +33,7 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
       );
 
       console.log("Fetched schedule:", response.data);
-      setSchedule(response.data.availability || {});
+      setSchedule(response.data.availability || "000000000000000000000000"); // Ensure default value
     } catch (error) {
       console.error("Error fetching doctor schedule:", error);
     }
@@ -52,6 +52,21 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
       return;
     }
     setSelectedSlot({ day: dayName, time });
+  };
+
+  // Handle Payment Process
+  const handleConfirmAndPay = () => {
+    if (!selectedSlot) return;
+    
+    // Call the function to handle payment processing
+    onBookingSuccess({
+      doctorId,
+      date,
+      time: selectedSlot.time,
+    });
+
+    // Close popup after selecting a slot
+    closePopup();
   };
 
   return (
@@ -77,13 +92,13 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
         />
 
         {/* Slots Display */}
-        {date && dayName && schedule[dayName] ? (
+        {date && schedule ? (
           <div>
             <h2 className="text-lg font-bold mb-2">{dayName} Slots</h2>
             <div className="grid grid-cols-4 gap-2">
               {Array.from({ length: 24 }, (_, hour) => {
-                const isAvailable = schedule[dayName] && schedule[dayName].charAt(hour) === "1";
-                const isSelected = selectedSlot?.time === hour;
+                const isAvailable = schedule.charAt(hour) == "1";
+                const isSelected = selectedSlot?.time == hour;
 
                 return (
                   <button
@@ -103,6 +118,18 @@ export default function BookAppointmentPopup({ doctorId, closePopup, onBookingSu
                 );
               })}
             </div>
+
+            {/* Confirm & Pay Button */}
+            {selectedSlot && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handleConfirmAndPay}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Confirm & Pay
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           date && <p className="text-red-500 mt-3">No slots available for this date.</p>
