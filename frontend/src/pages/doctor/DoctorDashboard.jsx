@@ -10,6 +10,10 @@ export default function DoctorDashboard() {
   const [schedule, setSchedule] = useState({});  
   const [appointments, setAppointments] = useState([]);  
   const [showDropdown, setShowDropdown] = useState(false);  
+  const [showUploadModal, setShowUploadModal] = useState({visible:false, appointmentId:null}); // Modal visibility state
+  const [selectedFile, setSelectedFile] = useState(null); // State to hold the selected file
+  const [diagnosis, setDiagnosis] = useState(""); // State to hold the diagnosis input
+  const [additionalNotes, setAdditionalNotes] = useState(""); // State to hold the additional notes input
 
   useEffect(() => {  
     const token = localStorage.getItem("token");  
@@ -82,6 +86,38 @@ export default function DoctorDashboard() {
       alert("Appointment marked as completed!");
     } catch (error) {
       console.error("Error updating appointment status:", error);
+    }
+  };
+
+  const uploadPrescription = async (appointmentId) => {
+    if (!selectedFile || !diagnosis || !additionalNotes) {
+      alert("Please fill in all fields and select a file to upload.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("appointmentId", appointmentId);
+    formData.append("prescriptionFile", selectedFile);
+    formData.append("diagnosis", diagnosis);
+    formData.append("additionalNotes", additionalNotes);
+
+    try {
+      console.log("hi");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.post(`http://localhost:5000/api/prescriptions/submit`, 
+        formData, 
+        { headers: { Authorization: token, "Content-Type": "multipart/form-data" } }
+      );
+
+      alert("Prescription uploaded successfully!");
+      setShowUploadModal({visible:false, appointmentId:null}); // Close modal after upload
+    } catch (error) {
+      console.error("Error uploading prescription:", error);
     }
   };
 
@@ -191,17 +227,74 @@ export default function DoctorDashboard() {
                   <p><strong>Time:</strong> {appointment.time}</p>
                   <p><strong>Date:</strong> {appointment.date}</p>
                 </div>
-                <button
+                <div className="flex gap-2">
+                  <button
                     onClick={() => markAppointmentCompleted(appointment._id)}
-                    disabled={!isPastAppointment || appointment.status === "completed"} // Disable if already completed
-                    className={`px-4 py-2 text-white rounded ${appointment.status === "completed" || !isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}>
+                    disabled={!isPastAppointment || appointment.status === "completed"}
+                    className={`px-4 py-2 text-white rounded ${appointment.status === "completed" || !isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
+                  >
                     {appointment.status === "completed" ? "Completed" : "Mark as Completed"}
-                </button>
+                  </button>
+                  <button
+                    onClick={() => setShowUploadModal({visible:true, appointmentId:appointment._id})}
+                    className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                  > 
+                    Upload Prescription
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>  
       </div>  
+
+      {/* Modal for uploading prescription */}
+      {showUploadModal.visible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-2xl font-semibold mb-4">Upload Prescription</h2>
+            <div className="mb-4">
+              <label className="block mb-2">Select Prescription File</label>
+              <input 
+                type="file" 
+                onChange={(e) => setSelectedFile(e.target.files[0])} 
+                className="border p-2 w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Diagnosis</label>
+              <input 
+                type="text" 
+                value={diagnosis} 
+                onChange={(e) => setDiagnosis(e.target.value)} 
+                className="border p-2 w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Additional Notes</label>
+              <textarea 
+                value={additionalNotes} 
+                onChange={(e) => setAdditionalNotes(e.target.value)} 
+                className="border p-2 w-full"
+              ></textarea>
+            </div>
+            <div className="flex justify-between">
+              <button 
+                onClick={() => setShowUploadModal({visible:false, appointmentId:null})} 
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => uploadPrescription(showUploadModal.appointmentId)} 
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>  
   );  
 }

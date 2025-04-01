@@ -61,31 +61,6 @@ router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
     }
 });
 
-// // ✅ Get logged-in doctor's details
-// router.get("/details/:id", authMiddleware, async (req, res) => {
-//     try {
-//         const { role } = req.user; // Extract user role from token
-//         let doctor;
-
-//         if (role === "doctor" || role === "admin") {
-//             // Doctors & Admins get full details (excluding password)
-//             doctor = await Doctor.findById(req.params.id).select("-password");
-//         } else {
-//             // Patients get only selected details
-//             doctor = await Doctor.findById(req.params.id).select("name specialization experience availability");
-
-//         }
-
-//         if (!doctor) return res.status(404).json({ message: "Doctor not found" });
-
-//         res.json(doctor);
-//     } catch (error) {
-//         console.error("Error fetching doctor:", error);
-//         res.status(500).json({ message: "Server error" });
-//     }
-// });
-
-
 router.get("/details/:id", authMiddleware, async (req, res) => {
     try {
         const { role } = req.user; // Extract user role from token
