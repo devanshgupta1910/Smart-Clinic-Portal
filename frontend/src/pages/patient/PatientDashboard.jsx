@@ -66,7 +66,6 @@ export default function PatientDashboard() {
   }, [navigate]);
   const fetchAppointments = async (token) => {
     try {
-      console.log(jwtDecode(token));
       const response = await axios.get("http://localhost:5000/api/appointments/all", {
         headers: { Authorization: token }, // Add token to headers
       });
@@ -76,14 +75,28 @@ export default function PatientDashboard() {
       setAppointments([]); // Prevent state from being undefined
     }
   };
-  const handleDownload = (prescriptionUrl) => {
-    const link = document.createElement("a");
-    link.href = prescriptionUrl;
-    link.download = "Prescription.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (appointmentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`http://localhost:5000/api/prescriptions/${appointmentId}`, {
+        headers: { Authorization: token },
+      });
+  
+      const prescriptionURL = response.data.prescriptionURL;
+  
+      if (!prescriptionURL) {
+        alert("No prescription file found.");
+        return;
+      }
+  
+      // Open the image in a new tab
+      window.open(prescriptionURL, "_blank");
+    } catch (error) {
+      console.error("Error fetching prescription:", error);
+      alert("Failed to fetch prescription.");
+    }
   };
+  
 
   const handleLogout = () => {
     alert("Logging out...");
@@ -151,7 +164,7 @@ export default function PatientDashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleDownload(appointment.prescriptionUrl)}
+                    onClick={() => handleDownload(appointment._id)}
                     className="flex items-center bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-200"
                   >
                     <FaDownload className="mr-2" /> Download

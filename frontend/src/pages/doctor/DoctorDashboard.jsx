@@ -97,12 +97,11 @@ export default function DoctorDashboard() {
 
     const formData = new FormData();
     formData.append("appointmentId", appointmentId);
-    formData.append("prescriptionFile", selectedFile);
+    formData.append("prescriptionURL", selectedFile);
     formData.append("diagnosis", diagnosis);
     formData.append("additionalNotes", additionalNotes);
 
     try {
-      console.log("hi");
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
@@ -237,7 +236,8 @@ export default function DoctorDashboard() {
                   </button>
                   <button
                     onClick={() => setShowUploadModal({visible:true, appointmentId:appointment._id})}
-                    className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                    disabled={appointment.status === "completed"}
+                    className={`px-4 py-2 text-white rounded ${!isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
                   > 
                     Upload Prescription
                   </button>
