@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 
 export default function AdminDashboard() {
   const [doctors, setDoctors] = useState([]);
+  const [departmentWiseDoctors, setDepartmentWiseDoctors] = useState({});
 
   useEffect(() => {
     fetchDoctors();
@@ -16,63 +16,115 @@ export default function AdminDashboard() {
         headers: { Authorization: token },
       });
 
-      // Sort: Unapproved doctors first
-      const sortedDoctors = response.data.sort((a, b) => a.isApproved - b.isApproved);
-      setDoctors(sortedDoctors);
+      const data = response.data;
+
+      const grouped = {};
+      data.forEach((doc) => {
+        if (!grouped[doc.department]) {
+          grouped[doc.department] = [];
+        }
+        grouped[doc.department].push(doc);
+      });
+
+      // Sort within departments: approved first
+      for (let dept in grouped) {
+        grouped[dept].sort((a, b) => b.isApproved - a.isApproved);
+      }
+
+      setDoctors(data);
+      setDepartmentWiseDoctors(grouped);
     } catch (error) {
       console.error("Error fetching doctors:", error);
     }
   };
 
-  const handleApprove = async (doctorId) => {
+  const toggleApproval = async (doctorId, currentStatus) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:5000/api/doctors/approve/${doctorId}`, {}, {
-        headers: { Authorization: token },
-      });
+      const endpoint = currentStatus
+        ? `http://localhost:5000/api/doctors/disapprove/${doctorId}`
+        : `http://localhost:5000/api/doctors/approve/${doctorId}`;
 
-      // Refresh doctor list
-      fetchDoctors();
+      await axios.put(endpoint, {}, { headers: { Authorization: token } });
+
+      fetchDoctors(); // Refresh
     } catch (error) {
-      console.error("Error approving doctor:", error);
+      console.error("Error updating doctor status:", error);
     }
   };
 
+  const total = doctors.length;
+  const approved = doctors.filter((d) => d.isApproved).length;
+  const disapproved = total - approved;
+
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
-
-      <Link to="/admin/doctors" className="block bg-blue-500 text-white p-2 rounded mb-4 text-center">
-        Manage Doctors
-      </Link>
-
-      <div className="max-h-[500px] overflow-y-auto border rounded-lg p-4">
-        {doctors.length === 0 ? (
-          <p>No doctors found.</p>
-        ) : (
-          doctors.map((doctor) => (
-            <div key={doctor._id} className="p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold">{doctor.name}</h2>
-                <p className="text-gray-600">{doctor.specialization} ({doctor.department})</p>
-                <p className="text-gray-500">Experience: {doctor.experience} years</p>
-                <p className={`font-semibold ${doctor.isApproved ? "text-green-500" : "text-red-500"}`}>
-                  {doctor.isApproved ? "Approved" : "Pending Approval"}
-                </p>
-              </div>
-
-              {!doctor.isApproved && (
-                <button
-                  onClick={() => handleApprove(doctor._id)}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+    <div className="min-h-screen bg-gradient-to-r from-blue-200 to-blue-400 p-6">
+      {/* Header */}
+      <h1 className="text-4xl font-bold text-white text-center mb-8">Admin Dashboard</h1>
+  
+      {/* Doctor Counts */}
+      <div className="flex flex-col md:flex-row justify-around mb-6 text-white font-semibold">
+        <div className="bg-blue-600 rounded-lg px-6 py-3 shadow-md mb-2 md:mb-0">
+          Total Doctors: {total}
+        </div>
+        <div className="bg-green-600 rounded-lg px-6 py-3 shadow-md mb-2 md:mb-0">
+          Approved: {approved}
+        </div>
+        <div className="bg-red-600 rounded-lg px-6 py-3 shadow-md">
+          Pending/Disapproved: {disapproved}
+        </div>
+      </div>
+  
+      {/* Registered Doctors by Department */}
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4 border-b pb-2">Registered Doctors</h2>
+  
+        {Object.entries(departmentWiseDoctors).map(([department, docs]) => (
+          <div key={department} className="mb-8">
+            <h3 className="text-xl font-semibold text-blue-800 mb-4">{department}</h3>
+  
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {docs.map((doctor) => (
+                <div
+                  key={doctor._id}
+                  className="bg-blue-50 p-4 rounded-lg shadow-md border border-blue-300"
                 >
-                  Approve
-                </button>
-              )}
+                  <div className="mb-3">
+                    <h4 className="text-lg font-bold text-blue-700">{doctor.name}</h4>
+                    <p className="text-gray-700">Email: {doctor.email}</p>
+                    <p className="text-gray-700">Phone: {doctor.phone}</p>
+                    <p className="text-gray-700">Reg. No: {doctor.registrationNumber}</p>
+                    <p className="text-gray-700">Experience: {doctor.experience} years</p>
+                    <p className="text-gray-700">Specialization: {doctor.specialization}</p>
+                    <p className="text-gray-700">Education: {doctor.education}</p>
+                  </div>
+  
+                  <div className="flex justify-between items-center">
+                    <span
+                      className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                        doctor.isApproved ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {doctor.isApproved ? "Approved" : "Pending"}
+                    </span>
+  
+                    <button
+                      onClick={() => toggleApproval(doctor._id, doctor.isApproved)}
+                      className={`px-4 py-2 rounded text-white transition ${
+                        doctor.isApproved
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-green-500 hover:bg-green-600"
+                      }`}
+                    >
+                      {doctor.isApproved ? "Disapprove" : "Approve"}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );
-}
+}  

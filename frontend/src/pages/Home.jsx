@@ -2,17 +2,22 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white">
+    <div className="min-h-screen bg-gradient-to-r from-blue-200 to-blue-400 p-6">
       {/* Navbar */}
-      <nav className="backdrop-blur-md bg-white/20 py-4 px-6 flex justify-between items-center shadow-lg rounded-b-2xl border border-white/30">
-        <h1 className="text-2xl font-extrabold tracking-wide">Smart Clinic</h1>
+      <nav className="bg-white/80 backdrop-blur-md shadow-md py-4 px-6 flex justify-between items-center border-b border-gray-200">
+        <h1 className="text-3xl font-extrabold tracking-wide text-gray-900">
+          HESOYAM Health
+        </h1>
         <div>
-          <Link to="/login" className="mx-3 text-white hover:text-yellow-300 transition-all">
+          <Link
+            to="/login"
+            className="mx-3 text-gray-700 hover:text-blue-500 transition-all"
+          >
             Login
           </Link>
           <Link
             to="/register"
-            className="ml-3 bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-semibold hover:bg-yellow-300 transition-all transform hover:scale-105"
+            className="ml-3 bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-blue-500 transition-all transform hover:scale-105"
           >
             Register
           </Link>
@@ -20,16 +25,16 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <header className="text-center py-24">
-        <h2 className="text-5xl font-extrabold tracking-wide drop-shadow-lg">
-          Your Health, Our Priority
+      <header className="text-center py-24 bg-gradient-to-r from-blue-200 via-white to-blue-100 rounded-b-[50px] shadow-lg">
+        <h2 className="text-6xl font-extrabold tracking-wide text-gray-900 drop-shadow-md">
+          HESOYAM : Shape the Future of Health
         </h2>
-        <p className="mt-4 text-lg opacity-90">
-          Book appointments, consult online, and manage medical records easily.
+        <p className="mt-4 text-lg text-gray-700">
+          Innovating healthcare with seamless digital experiences.
         </p>
         <Link
           to="/register"
-          className="mt-6 inline-block bg-yellow-400 text-gray-900 px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-yellow-300 transition-all transform hover:scale-105"
+          className="mt-6 inline-block bg-blue-700 text-white px-8 py-3 rounded-full font-semibold shadow-md hover:bg-blue-600 transition-all transform hover:scale-110"
         >
           Get Started
         </Link>
@@ -37,37 +42,45 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="py-16 px-6">
-        <h3 className="text-3xl font-extrabold text-center">Why Choose Smart Clinic?</h3>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h3 className="text-4xl font-extrabold text-center text-gray-900">
+          Why Choose HESOYAM?
+        </h3>
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="backdrop-blur-md bg-white/20 p-6 rounded-2xl shadow-lg text-center border border-white/30">
-            <h4 className="text-xl font-semibold">Easy Appointments</h4>
-            <p className="mt-2 opacity-90">
-              Book doctor visits or online consultations instantly.
+          <div className="bg-white p-8 rounded-3xl shadow-lg text-center border border-gray-200 hover:shadow-xl transition">
+            <h4 className="text-2xl font-semibold text-gray-900">
+              Instant Appointments
+            </h4>
+            <p className="mt-2 text-gray-600">
+              Schedule visits or telehealth consultations effortlessly.
             </p>
           </div>
 
           {/* Feature 2 */}
-          <div className="backdrop-blur-md bg-white/20 p-6 rounded-2xl shadow-lg text-center border border-white/30">
-            <h4 className="text-xl font-semibold">Medical Records</h4>
-            <p className="mt-2 opacity-90">
-              Securely store and access prescriptions and test reports.
+          <div className="bg-white p-8 rounded-3xl shadow-lg text-center border border-gray-200 hover:shadow-xl transition">
+            <h4 className="text-2xl font-semibold text-gray-900">
+              Secure Medical Records
+            </h4>
+            <p className="mt-2 text-gray-600">
+              Access prescriptions and test reports anytime.
             </p>
           </div>
 
           {/* Feature 3 */}
-          <div className="backdrop-blur-md bg-white/20 p-6 rounded-2xl shadow-lg text-center border border-white/30">
-            <h4 className="text-xl font-semibold">24/7 Support</h4>
-            <p className="mt-2 opacity-90">
-              Get medical help anytime, anywhere with our online support.
+          <div className="bg-white p-8 rounded-3xl shadow-lg text-center border border-gray-200 hover:shadow-xl transition">
+            <h4 className="text-2xl font-semibold text-gray-900">
+              24/7 Healthcare Support
+            </h4>
+            <p className="mt-2 text-gray-600">
+              Get medical assistance anytime, anywhere.
             </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="backdrop-blur-md bg-white/20 text-white py-6 text-center border-t border-white/30">
-        <p>&copy; 2025 Smart Clinic. All Rights Reserved.</p>
+      <footer className="bg-white/80 backdrop-blur-md text-gray-700 py-6 text-center border-t border-gray-200">
+        <p>&copy; 2025 Hesoyam Health. All Rights Reserved.</p>
       </footer>
     </div>
   );

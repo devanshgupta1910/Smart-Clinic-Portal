@@ -22,9 +22,7 @@ export default function PatientRegister() {
 
     try {
       const response = await axios.post("http://localhost:5000/api/users/register", patient);
-    
       if (response.status === 201 || response.status === 200) {
-        //alert("Patient registered successfully!");
         navigate("/patient/dashboard");
       } else {
         alert("Registration failed. Try again.");
@@ -36,68 +34,51 @@ export default function PatientRegister() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
-      <div className="backdrop-blur-md bg-white/20 p-8 rounded-2xl shadow-2xl w-96 border border-white/30">
-        <h2 className="text-3xl font-extrabold text-center text-white mb-6 tracking-wide">
-          Patient Registration
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative">
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              className="w-full p-3 bg-transparent border-b-2 border-white text-white placeholder-white focus:outline-none focus:border-yellow-300 transition-all"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="tel"
-              name="mobile_number"
-              placeholder="Mobile Number"
-              pattern="[0-9]{10}"
-              className="w-full p-3 bg-transparent border-b-2 border-white text-white placeholder-white focus:outline-none focus:border-yellow-300 transition-all"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              className="w-full p-3 bg-transparent border-b-2 border-white text-white placeholder-white focus:outline-none focus:border-yellow-300 transition-all"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              className="w-full p-3 bg-transparent border-b-2 border-white text-white placeholder-white focus:outline-none focus:border-yellow-300 transition-all"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="date"
-              name="dob"
-              className="w-full p-3 bg-transparent border-b-2 border-white text-white focus:outline-none focus:border-yellow-300 transition-all"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button className="w-full bg-yellow-400 text-gray-900 font-bold p-3 rounded-full shadow-lg hover:bg-yellow-300 transition-all transform hover:scale-105">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-200 to-blue-400 p-6">
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-[400px] border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Patient Registration</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="tel"
+            name="mobile_number"
+            placeholder="Mobile Number"
+            pattern="[0-9]{10}"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="date"
+            name="dob"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            required
+          />
+          <button className="w-full bg-blue-500 text-white font-semibold p-3 rounded-lg shadow-md hover:bg-blue-600 transition-all">
             Register as Patient
           </button>
         </form>

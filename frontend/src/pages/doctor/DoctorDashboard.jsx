@@ -79,7 +79,7 @@ export default function DoctorDashboard() {
 
       setAppointments((prevAppointments) =>
         prevAppointments.map((appointment) =>
-          appointment._id === appointmentId ? { ...appointment, status: "Completed" } : appointment
+          appointment._id === appointmentId ? { ...appointment, status: "completed" } : appointment
         )
       );
 
@@ -160,84 +160,144 @@ export default function DoctorDashboard() {
     navigate("/login");  
   };  
 
-  const renderScheduleGrid = () => {  
-    return (  
-      <div className="grid grid-cols-8 gap-1 text-sm">  
-        <div className="font-bold text-center"></div>  
-        {Object.keys(schedule).map((day) => (  
-          <div key={day} className="font-bold text-center">{day}</div>  
-        ))}  
-        {Array.from({ length: 24 }, (_, hour) => (  
-          <div className="contents" key={`hour-${hour}`}>  
-            <div className="font-semibold text-center">{hour}:00</div>  
-            {Object.keys(schedule).map((day) => (  
-              <button  
-                key={`slot-${day}-${hour}`}  
-                className={`w-10 h-10 border rounded transition duration-200   
-                  ${schedule[day]?.[hour] === "1" ? "bg-green-500 cursor-pointer" : "bg-gray-200 hover:bg-green-200 cursor-pointer"}`}  
-                onClick={() => toggleSlot(day, hour)}  
-              >  
-              </button>  
-            ))}  
-          </div>  
-        ))}  
-      </div>  
-    );  
-  };  
+const renderScheduleGrid = () => {
+  return (
+    <div className="w-full flex flex-col items-center"> 
+      
+      {/* Weekday Headers */}
+      <div className="grid grid-cols-8 gap-4 w-fit mb-2">
+        <div className="w-26"></div> {/* Placeholder for time column */}
+        {Object.keys(schedule).map((day) => (
+          <div
+            key={day}
+            className="font-bold text-center text-white bg-blue-500 p-3 rounded w-28 h-14 flex items-center justify-center"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
 
+      {/* Time Slots Grid */}
+      <div className="grid grid-cols-8 gap-4 w-fit">
+        {Array.from({ length: 24 }, (_, hour) => (
+          <div key={`hour-${hour}`} className="contents">
+            {/* Hour Column */}
+            <div className="font-semibold text-center text-white bg-blue-500 p-3 rounded w-28 h-14 flex items-center justify-center">
+              {hour}:00
+            </div>
+
+            {/* Slots for Each Day */}
+            {Object.keys(schedule).map((day) => (
+              <div key={`slot-container-${day}-${hour}`} className="flex justify-center items-center w-28 h-14">
+                <button
+                  key={`slot-${day}-${hour}`}
+                  className={`w-14 h-14 border border-blue-400 rounded-lg transition duration-200 cursor-pointer
+                    ${schedule[day]?.[hour] === "1"
+                      ? "bg-green-500 hover:bg-green-400"
+                      : "bg-blue-200 hover:bg-blue-300"} 
+                  `}
+                  onClick={() => toggleSlot(day, hour)}
+                ></button>
+
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
   return (  
-    <div className="min-h-screen bg-gray-100 p-6 flex gap-6">  
-      <div className="bg-white p-4 rounded-lg shadow-md w-2/3 max-h-[80vh] overflow-y-auto">  
-        <h3 className="text-xl font-semibold mb-4">Manage Availability</h3>  
-        {renderScheduleGrid()}  
-        <button  
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"  
-          onClick={saveSchedule}  
-        >  
-          Save Schedule  
-        </button>  
+    <div className="min-h-screen bg-gradient-to-r from-blue-200 to-blue-400 p-6 flex flex-col gap-6 text-blue-900">  
+
+      {/* Doctor Dashboard Header (Full Width) */}
+      <div className="w-full bg-white shadow-lg p-4 rounded-lg flex justify-between items-center">  
+        <h2 className="text-2xl font-bold">Doctor Dashboard</h2>  
+        <div className="relative">  
+          <FaUserCircle className="text-4xl text-blue-600 cursor-pointer hover:text-blue-900" onClick={() => setShowDropdown(!showDropdown)} />  
+          {showDropdown && (  
+            <div className="absolute right-0 mt-2 w-48 bg-blue-100 shadow-lg rounded-lg p-2 z-10">  
+              <button onClick={() => navigate("/doctor/profile")} className="block w-full text-left p-2 hover:bg-blue-200">Profile</button>  
+              <button onClick={handleLogout} className="block w-full text-left p-2 hover:bg-blue-200">Logout</button>  
+            </div>  
+          )}  
+        </div>  
       </div>  
 
-      <div className="w-1/3 max-h-[80vh] overflow-y-auto">  
-        <div className="flex justify-between items-center bg-white shadow-md p-4 rounded-lg mb-6">  
-          <h2 className="text-2xl font-bold text-gray-700">Doctor Dashboard</h2>  
-          <div className="relative">  
-            <FaUserCircle className="text-3xl text-gray-700 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />  
-            {showDropdown && (  
-              <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg p-2 z-10">  
-                <button onClick={() => navigate("/doctor/profile")} className="block w-full text-left p-2 hover:bg-gray-200">Profile</button>  
-                <button onClick={handleLogout} className="block w-full text-left p-2 hover:bg-gray-200">Logout</button>  
-              </div>  
-            )}  
-          </div>  
+      {/* Two Sections Side-by-Side */}
+      <div className="flex gap-6 w-full">
+        
+        {/* Manage Availability Section (Wider - 60%) */}
+        <div className="bg-white p-6 rounded-lg shadow-lg w-[60%] max-h-[80vh] overflow-y-auto">  
+          <h3 className="text-xl font-semibold mb-4 border-b border-blue-300 pb-2">Manage Availability</h3>  
+          {renderScheduleGrid()}  
+          <div className="flex justify-center mt-4">
+            <button  
+              className="mt-4 bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-500 transition"  
+              onClick={saveSchedule}  
+            >  
+              Save Schedule  
+            </button> 
+          </div> 
         </div>  
 
-        <div className="bg-white p-4 rounded-lg shadow-md">  
-          <h3 className="text-xl font-semibold mb-4">Your Appointments</h3>  
-          {appointments.map((appointment) => {
+        {/* Your Appointments Section (Narrower - 40%) */}
+        <div className="bg-white p-5 rounded-lg shadow-lg w-[40%] max-h-[80vh] overflow-y-auto">  
+          <h3 className="text-xl font-semibold mb-4 border-b border-blue-300 pb-2">Your Appointments</h3>  
+          {[...appointments]
+            .sort((a, b) => {
+              const now = new Date();
+              
+              const getDateTime = (appt) => {
+                const date = appt.date.split("T")[0];
+                const hour = String(appt.timeSlot).padStart(2, "0");
+                return new Date(`${date}T${hour}:00:00Z`);
+              };
+
+              const aTime = getDateTime(a);
+              const bTime = getDateTime(b);
+
+              const aIsPast = aTime < now;
+              const bIsPast = bTime < now;
+
+              // If one is future and one is past, put future one on top
+              if (!aIsPast && bIsPast) return -1;
+              if (aIsPast && !bIsPast) return 1;
+
+              // If both are future, sort ascending
+              if (!aIsPast && !bIsPast) return aTime - bTime;
+
+              // If both are past, sort descending
+              return bTime - aTime;
+            })
+            .map((appointment) => {
             const appointmentDate = appointment.date.split("T")[0];
             const formattedHour = String(appointment.timeSlot).padStart(2, "0");
             const appointmentDateTime = new Date(`${appointmentDate}T${formattedHour}:00:00Z`);
             const isPastAppointment = appointmentDateTime < new Date();
             return (
-              <div key={appointment._id} className="bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
+              <div key={appointment._id} className="bg-blue-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-3">
                 <div>
                   <h4 className="text-lg font-semibold flex items-center"><FaUser className="text-blue-500 mr-2" /> {appointment.patient}</h4>
-                  <p><strong>Time:</strong> {appointment.time}</p>
-                  <p><strong>Date:</strong> {appointment.date}</p>
+                  <p><strong>Date:</strong> {appointment.date.split("T")[0]}</p>
+                  <p><strong>Time:</strong> {appointment.timeSlot}:00</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => markAppointmentCompleted(appointment._id)}
                     disabled={!isPastAppointment || appointment.status === "completed"}
-                    className={`px-4 py-2 text-white rounded ${appointment.status === "completed" || !isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
+                    className={`w-36 px-4 py-2 text-white rounded-md text-sm text-center
+                      ${appointment.status === "completed" || !isPastAppointment ? "bg-blue-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-400"}
+                    `}
                   >
                     {appointment.status === "completed" ? "Completed" : "Mark as Completed"}
                   </button>
                   <button
                     onClick={() => setShowUploadModal({visible:true, appointmentId:appointment._id})}
                     disabled={appointment.status === "completed"}
-                    className={`px-4 py-2 text-white rounded ${!isPastAppointment ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
+                    className={`w-36 px-4 py-2 text-white rounded-md text-sm text-center
+                      ${!isPastAppointment ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-400"}
+                    `}
                   > 
                     Upload Prescription
                   </button>
@@ -246,19 +306,20 @@ export default function DoctorDashboard() {
             );
           })}
         </div>  
-      </div>  
 
-      {/* Modal for uploading prescription */}
+      </div>
+
+      {/* Modal for Uploading Prescription */}
       {showUploadModal.visible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
             <h2 className="text-2xl font-semibold mb-4">Upload Prescription</h2>
             <div className="mb-4">
               <label className="block mb-2">Select Prescription File</label>
               <input 
                 type="file" 
                 onChange={(e) => setSelectedFile(e.target.files[0])} 
-                className="border p-2 w-full"
+                className="border border-blue-300 p-2 w-full bg-blue-50 text-blue-900"
               />
             </div>
             <div className="mb-4">
@@ -267,7 +328,7 @@ export default function DoctorDashboard() {
                 type="text" 
                 value={diagnosis} 
                 onChange={(e) => setDiagnosis(e.target.value)} 
-                className="border p-2 w-full"
+                className="border border-blue-300 p-2 w-full bg-blue-50 text-blue-900"
               />
             </div>
             <div className="mb-4">
@@ -275,19 +336,19 @@ export default function DoctorDashboard() {
               <textarea 
                 value={additionalNotes} 
                 onChange={(e) => setAdditionalNotes(e.target.value)} 
-                className="border p-2 w-full"
+                className="border border-blue-300 p-2 w-full bg-blue-50 text-blue-900"
               ></textarea>
             </div>
             <div className="flex justify-between">
               <button 
                 onClick={() => setShowUploadModal({visible:false, appointmentId:null})} 
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-blue-300 text-blue-900 rounded-md hover:bg-blue-200"
               >
                 Cancel
               </button>
               <button 
                 onClick={() => uploadPrescription(showUploadModal.appointmentId)} 
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500"
               >
                 Upload
               </button>
@@ -295,6 +356,9 @@ export default function DoctorDashboard() {
           </div>
         </div>
       )}
+
     </div>  
-  );  
+  );
+
+
 }

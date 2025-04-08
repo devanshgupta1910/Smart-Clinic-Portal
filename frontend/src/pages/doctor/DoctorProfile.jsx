@@ -61,13 +61,14 @@ export default function DoctorProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="bg-white shadow-md p-6 rounded-lg max-w-lg mx-auto">
-        <h2 className="text-2xl font-bold text-gray-700 flex items-center">
+    <div className="min-h-screen bg-gradient-to-r from-blue-200 to-blue-400 p-6 flex justify-center items-center">
+      <div className="bg-white shadow-lg p-6 rounded-lg max-w-lg w-full">
+        <h2 className="text-3xl font-bold text-blue-600 flex items-center justify-center mb-4">
           <FaUserMd className="mr-2" /> Doctor Profile
         </h2>
+
         {loading ? (
-          <p>Loading...</p>
+          <p className="text-center text-gray-700">Loading...</p>
         ) : (
           <div className="mt-4">
             <label className="block text-gray-700">Name</label>
@@ -84,7 +85,7 @@ export default function DoctorProfile() {
             <input
               type="text"
               name="mobile_number"
-              value={profile.phone}
+              value={profile.mobile_number}
               onChange={handleInputChange}
               disabled={!isEditing}
               className="w-full border p-2 rounded mb-3"
@@ -95,7 +96,6 @@ export default function DoctorProfile() {
               type="email"
               name="email"
               value={profile.email}
-              onChange={handleInputChange}
               disabled
               className="w-full border p-2 rounded mb-3 bg-gray-200 cursor-not-allowed"
             />
@@ -111,11 +111,11 @@ export default function DoctorProfile() {
             />
 
             {isEditing ? (
-              <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600 transition">
                 Save Changes
               </button>
             ) : (
-              <button onClick={() => setIsEditing(true)} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+              <button onClick={() => setIsEditing(true)} className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-gray-600 transition">
                 Edit Profile
               </button>
             )}

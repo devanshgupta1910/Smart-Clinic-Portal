@@ -10,7 +10,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import BookAppointment from "./pages/patient/BookAppointment";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
-import UploadReport from "./pages/patient/UploadReport";
 import PatientProfile from "./pages/patient/PatientProfile";
 import DoctorProfile from "./pages/doctor/DoctorProfile";
 
@@ -35,7 +34,6 @@ export default function App() {
       {/* Patient Routes */}
       <Route path="/patient/dashboard" element={<PatientDashboard />} />
       <Route path="/patient/book/:doctorId" element={<BookAppointment />} />
-      <Route path="/patient/upload" element={<UploadReport />} />
       <Route path="/patient/doctors/:department" element={<DepartmentDoctors />} />
       <Route path="/patient/profile" element={<PatientProfile />} />
 

@@ -21,26 +21,26 @@ export default function DepartmentDoctors() {
   }, [department]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl mb-4">{department} Doctors</h2>
+    <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 min-h-screen">
+      <h2 className="text-3xl font-bold text-center text-gray-700 mb-6">{department} Doctors</h2>
       {doctors.length === 0 ? (
-        <p>No doctors found in {department}</p>
+        <p className="text-center text-gray-500">No doctors found in {department}</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {doctors.map((doctor) => (
-            <div key={doctor._id} className="bg-white p-4 rounded shadow flex items-center gap-4">
+            <div key={doctor._id} className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
               <img
                 src={doctor.imageUrl || "https://cdn-icons-png.flaticon.com/512/3870/3870822.png"}
                 alt={doctor.name}
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-24 h-24 rounded-full object-cover border-4 border-blue-300"
               />
-              <div>
-                <h3 className="text-lg font-semibold">{doctor.name}</h3>
-                <p>{doctor.specialization}</p>
-                <p>📞 {doctor.phone}</p>
+              <div className="text-center mt-4">
+                <h3 className="text-xl font-semibold text-gray-700">{doctor.name}</h3>
+                <p className="text-gray-500">{doctor.specialization}</p>
+                <p className="text-gray-600 font-medium">📞 {doctor.phone}</p>
                 <button
                   onClick={() => setSelectedDoctor(doctor._id)} // Open popup
-                  className="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
                 >
                   Book Appointment
                 </button>
